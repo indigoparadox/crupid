@@ -10,17 +10,18 @@
 #define BUFFER_SZ 4096
 #define CHUNK_SZ 512
 
+struct tagbstring test_k = bsStatic( "test" );
+struct tagbstring test_v = bsStatic( "This is a test var." );
+
 int main( int argc, char** argv ) {
    FILE* f_template = NULL;
-   char* buffer = NULL;
-   char* new_buffer = NULL;
-   ssize_t buffer_sz = BUFFER_SZ;
-   ssize_t buffer_idx = 0;
+   bstring buffer = NULL;
    struct parser_var* vars = NULL;
    struct parser_var* iter = NULL;
+   int bres = 0;
+   struct 
 
-   buffer = calloc( buffer_sz, 1 );
-   assert( NULL != buffer );
+   buffer = bfromcstr( "" );
 
    while( 0 >= FCGI_Accept() ) {
 
@@ -37,21 +38,12 @@ int main( int argc, char** argv ) {
       /* TODO: Call hooks. */
 
       /* Read and process the template. */
-      while( 0 < fread( &(buffer[buffer_idx]), 1, CHUNK_SZ, f_template ) ) {
-         /* Safely try to realloc buffer if it's full (or will be soon). */
-         if( buffer_idx + CHUNK_SZ >= buffer_sz ) {
-            /* fprintf( stderr, "Buffer %d bytes; resizing to %d bytes.",
-               buffer_sz, (buffer_sz * 2) ); */
-            assert( buffer_sz < (buffer_sz * 2) );
-            new_buffer = realloc( buffer, buffer_sz * 2 );
-            assert( NULL != new_buffer );
-            buffer = new_buffer;
-            buffer_sz *= 2;
-         }
-      }
+      btrunc( buffer, 0 );
+      bres = breada( buffer, fread, f_template );
+      assert( BSTR_OK == bres );
 
-      parser_set_var( "test", 5, "Test string.", 13, &vars );
-      parser_template( &buffer, &buffer_sz, vars );
+      parser_set_var( &test_k, &test_v, &vars );
+      parser_template( buffer, vars );
 
       /* Clean up vars for next request. */
       iter = vars;

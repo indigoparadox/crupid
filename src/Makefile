@@ -1,7 +1,7 @@
 
 # vim: ft=make noexpandtab
 
-OBJECTS := crupid.o parser.o
+OBJECTS := crupid.o parser.o bstrlib/bstrlib.o
 OBJECTS_TESTS := $(OBJDIR_TESTS)/check.o $(OBJDIR_TESTS)/check_crupid.o
 
 BINDIR_LINUX = ../bin/linux
@@ -25,7 +25,7 @@ crupid: $(addprefix ../obj/linux/,$(OBJECTS))
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 ../obj/linux/%.o: $(notdir %.c)
-	$(MD) $(OBJDIR)
+	$(MD) $(addprefix ../obj/linux/,$(shell dirname "$<"))
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR_TESTS)/%.o: ../tests/$(notdir %.c)
