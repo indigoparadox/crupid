@@ -22,7 +22,7 @@ test_crupid: OBJDIR := $(OBJDIR_TESTS)
 all: crupid
 
 crupid: $(addprefix ../obj/linux/,$(OBJECTS))
-	$(CC) -o $@ $< $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 ../obj/linux/%.o: $(notdir %.c)
 	$(MD) $(OBJDIR)
