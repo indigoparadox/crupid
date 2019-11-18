@@ -13,13 +13,15 @@
 struct tagbstring test_k = bsStatic( "test" );
 struct tagbstring test_v = bsStatic( "This is a test var." );
 
+struct tagbstring title_k = bsStatic( "title" );
+struct tagbstring title_v = bsStatic( "This is a title var." );
+
 int main( int argc, char** argv ) {
    FILE* f_template = NULL;
    bstring buffer = NULL;
    struct parser_var* vars = NULL;
    struct parser_var* iter = NULL;
    int bres = 0;
-   struct 
 
    buffer = bfromcstr( "" );
 
@@ -39,10 +41,11 @@ int main( int argc, char** argv ) {
 
       /* Read and process the template. */
       btrunc( buffer, 0 );
-      bres = breada( buffer, fread, f_template );
+      bres = breada( buffer, (bNread)fread, f_template );
       assert( BSTR_OK == bres );
 
       parser_set_var( &test_k, &test_v, &vars );
+      parser_set_var( &title_k, &title_v, &vars );
       parser_template( buffer, vars );
 
       /* Clean up vars for next request. */
@@ -50,14 +53,16 @@ int main( int argc, char** argv ) {
       while( NULL != vars ) {
          iter = vars;
          vars = vars->next;
-         free( iter->key );
-         free( iter->value );
+         assert( NULL != iter->key );
+         assert( NULL != iter->value );
+         bdestroy( iter->key );
+         bdestroy( iter->value );
          free( iter );
       }
 
       fclose( f_template );
 
-      FCGI_printf( "%s", buffer );
+      FCGI_printf( "%s", bdata( buffer ) );
    }
 
    free( buffer );
